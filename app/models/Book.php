@@ -1,6 +1,6 @@
 <?php
-require_once('../includes/database.php');
-require_once('../models/Categories.php');
+require_once(__DIR__ . '/../includes/database.php');
+require_once(__DIR__ . '/../models/Categories.php');
 
 class Book {
     private $pdo;
@@ -10,17 +10,22 @@ class Book {
     }
 
     public function getAllBooks() {
-        $sql = 'SELECT * FROM books';
+        $sql = 'SELECT * FROM Book';
         return $this->pdo->execQuery($sql);
     }
 
     public function getBookDetails($id) {
-        $sql = " SELECT * FROM books WHERE id = :id";
-        return $this->pdo->execQuery($sql, array(""=> $id));
+        $sql = "SELECT * FROM Book WHERE id = :id";
+        return $this->pdo->execQuery($sql, array("id" => $id));
+    }
+
+    public function getFeaturedBooks() {
+        $sql = "SELECT * FROM Book ORDER BY id DESC LIMIT 20";
+        return $this->pdo->execQuery($sql);
     }
 
     public function addBook($title, $author, $year, $condition, $copies, $description, $categories) {
-        $sql = "INSERT INTO books (title, author, year, `condition`, copies, description, cover) VALUES (:title, :author, :year, :condition, :copies, :description, :cover)";
+        $sql = "INSERT INTO Book (title, author, publication_year, `condition`, number_of_copies, `description`) VALUES (:title, :author, :year, :condition, :copies, :description)";
         $book = [
             "title" => $title,
             "author" => $author,
@@ -28,7 +33,6 @@ class Book {
             "condition" => $condition,
             "copies" => $copies,
             "description" => $description,
-            "cover" => "default.jpg"
         ];
         $bookId = $this->pdo->execQuery($sql, $book, true); 
 
@@ -42,8 +46,7 @@ class Book {
     }
 
     public function searchBooks($search) {
-        $sql = "SELECT * FROM books WHERE title LIKE :search";
-        return $this->pdo->execQuery($sql, [$search]);
-       
+        $sql = "SELECT * FROM Book WHERE title LIKE :search OR author LIKE :search";
+        return $this->pdo->execQuery($sql, ["search" => "%$search%"]);
     }
 }
